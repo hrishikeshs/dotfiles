@@ -1,4 +1,9 @@
 (setq load-path (cons (expand-file-name "~/elisp") load-path))
+(add-to-list 'load-path "~/.emacs.d/elpa/editorconfig-0.3/")
+(add-to-list 'load-path "~/.emacs.d/elpa/js2-mode-20140114/")
+(add-to-list 'load-path "~/.emacs.d/elpa/handlebars-mode-1.3/")
+(add-to-list 'load-path "~/.emacs.d/elpa/magit-1.2.1/")
+(add-to-list 'load-path "~/.emacs.d/highlight-indent")
 
 (server-start)
 
@@ -15,6 +20,7 @@
 
 (require 'magit)
 (require 'highlight-indentation)
+(menu-bar-mode -1)
 (setq-default indent-tabs-mode nil)
 
 (require 'handlebars-mode)
@@ -134,14 +140,14 @@
 ;;          (append '(("\\.js$" . javascript-mode))
 ;;                   auto-mode-alist))
 
-(autoload 'js2-mode
-  "js2-mode" "Javascript mode" t)
+;; (autoload 'js2-mode
+;;   "js2-mode" "Javascript mode" t)
 
-(setq auto-mode-alist
-      (append '(("\\.js$" . js2-mode))
-	      auto-mode-alist))
+;; (setq auto-mode-alist
+;;       (append '(("\\.js$" . js2-mode))
+;; 	      auto-mode-alist))
 
-(add-hook 'js2-mode-hook 'highlight-indentation-mode)
+(add-hook 'js-mode-hook 'highlight-indentation-mode)
 
 (defun ldd-js2-parse-jshintrc ()
   "This looks recursively up for a .jshintrc and extracts the
