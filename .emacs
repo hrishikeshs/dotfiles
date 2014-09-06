@@ -51,6 +51,8 @@
 ;;  'ansi-color-filter-apply) ;; this doesn't work, but the next line does!!
   'ansi-color-apply)
 
+(add-hook 'eshell-mode-hook (lambda ()(setenv "TERM" "emacs"))) ;display colors when git commands are used in eshell.
+
 ;; Bob's customizations!
 ;;
 (global-set-key "\C-o\C-s" 'maybe-new-shell)
