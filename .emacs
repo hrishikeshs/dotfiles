@@ -4,7 +4,6 @@
 (add-to-list 'load-path "~/.emacs.d/elpa/handlebars-mode-1.3/")
 (add-to-list 'load-path "~/.emacs.d/elpa/magit-1.2.1/")
 (add-to-list 'load-path "~/.emacs.d/highlight-indent")
-
 (server-start)
 
 (global-unset-key "\C-o")
@@ -31,7 +30,7 @@
   (interactive "p")
 
   ; no matter what happens, we will need to go to (after creating if necessary) the first shell buffer
-  (eshell)  
+  (eshell)
   (if (/= arg 1)
     (let ((new-shell-name (concat "*eshell-" (number-to-string arg) "*")))
       (if (get-buffer new-shell-name)
@@ -51,7 +50,10 @@
 ;;  'ansi-color-filter-apply) ;; this doesn't work, but the next line does!!
   'ansi-color-apply)
 
-(add-hook 'eshell-mode-hook (lambda ()(setenv "TERM" "emacs"))) ;display colors when git commands are used in eshell.
+(add-hook 'eshell-mode-hook
+   (lambda ()
+     (setenv "TERM" "emacs") ; enable colors
+     ))
 
 ;; Bob's customizations!
 ;;
@@ -65,6 +67,11 @@
 (global-set-key "\C-o\C-z" 'zap-to-char)
 (global-set-key "\C-o\C-e" 'js2-next-error)
 
+(defun back()
+  (interactive)
+  (other-window -1))
+
+(global-set-key "\C-o\C-p" 'back)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; make C-o C-s work from dired
 ;;
@@ -89,22 +96,22 @@
 (setq interpreter-mode-alist
       (cons '("python" . python-mode)
             interpreter-mode-alist))
-  
+
 (autoload 'python-mode "python-mode" "Python editing mode." t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; css mode
 ;;
 ;; (autoload 'css-mode "css-mode")
-;; (setq auto-mode-alist       
+;; (setq auto-mode-alist
 ;;      (cons '("\\.css\\'" . css-mode) auto-mode-alist))
- (setq auto-mode-alist       
+ (setq auto-mode-alist
       (cons '("\\.scss\\'" . css-mode) auto-mode-alist))
 
 (autoload 'sgml-mode "sgml-mode")
-(setq auto-mode-alist       
+(setq auto-mode-alist
      (cons '("\\.html\\'" . sgml-mode) auto-mode-alist))
-(setq auto-mode-alist       
+(setq auto-mode-alist
      (cons '("\\.handlebars\\'" . handlebars-mode) auto-mode-alist))
 
 (add-hook 'sgml-mode-hook
@@ -142,14 +149,19 @@
 ;;          (append '(("\\.js$" . javascript-mode))
 ;;                   auto-mode-alist))
 
-;; (autoload 'js2-mode
-;;   "js2-mode" "Javascript mode" t)
+(autoload 'js2-mode "js2" nil t)
 
-;; (setq auto-mode-alist
-;;       (append '(("\\.js$" . js2-mode))
-;; 	      auto-mode-alist))
+(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+
+(autoload 'js2-mode
+  "js2-mode" "Javascript mode" t)
+
+(setq auto-mode-alist
+      (append '(("\\.js$" . js2-mode))
+	      auto-mode-alist))
 
 (add-hook 'js-mode-hook 'highlight-indentation-mode)
+(add-hook 'js2-mode-hook 'highlight-indentation-mode)
 
 (defun ldd-js2-parse-jshintrc ()
   "This looks recursively up for a .jshintrc and extracts the
@@ -175,15 +187,15 @@ globals from it to add them to js2-additional-externs."
     )
   )
 )
-(add-hook 'js2-init-hook 'ldd-js2-parse-jshintrc)
-;;(js2-imenu-extras-mode)
-;;(add-hook 'js2-mode-hook 'js2-imenu-extras-mode)
+;(add-hook 'js2-init-hook 'ldd-js2-parse-jshintrc)
+;(js2-imenu-extras-mode)
+;(add-hook 'js2-mode-hook 'js2-imenu-extras-mode)
 
 ;;cursor movemtn takes into account camelcasing bullshit
 (add-hook 'js2-mode-hook 'subword-mode)
 
 ;; make fooBar look like foo_Bar
-(add-hook 'js2-mode-hook 'glasses-mode)
+;(add-hook 'js2-mode-hook 'glasses-mode)
 
 ;; match parens
 (add-hook 'js2-mode-hook 'show-paren-mode)
@@ -209,8 +221,6 @@ globals from it to add them to js2-additional-externs."
   (append '(("Malformed expression: \\(.+\\),.+line \\([0-9]+\\).+column \\([0-9]+\\)" 1 2 3))
 	  compilation-error-regexp-alist))
 
-;;(require 'google)
-;;(setq google-license-key "VKZC//VQFHJsaQNdHdf+gdYKRs0XyVG8")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; backup files
@@ -230,6 +240,9 @@ globals from it to add them to js2-additional-externs."
  ;; If there is more than one, they won't work right.
  '(auto-save-file-name-transforms (quote ((".*" "~/.emacs.d/autosaves/\\1" t))))
  '(css-indent-offset 2)
+ '(custom-safe-themes
+   (quote
+    ("180adb18379d7720859b39124cb6a79b4225d28cef4bfcf4ae2702b199a274c8" "e16a771a13a202ee6e276d06098bc77f008b73bbac4d526f160faa2d76c1dd0e" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "787574e2eb71953390ed2fb65c3831849a195fd32dfdd94b8b623c04c7f753f0" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" default)))
  '(js2-basic-offset 2)
  '(js2-global-externs (quote ("Kaybus" "Ember" "moment" "Em" "DS"))))
 
@@ -242,7 +255,7 @@ globals from it to add them to js2-additional-externs."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; auto completion inside meacs shell
 ;;
-;;(autoload 'bash-completion-dynamic-complete 
+;;(autoload 'bash-completion-dynamic-complete
 ;;  "bash-completion"
 ;;  "BASH completion hook")
 ;;(add-hook 'shell-dynamic-complete-functions
@@ -261,10 +274,10 @@ globals from it to add them to js2-additional-externs."
     "init" "log" "merge" "mv" "pull" "push" "rebase"
     "reset" "rm" "show" "status" "tag" )
   "List of `git' commands")
- 
+
 (defvar pcmpl-git-ref-list-cmd "git for-each-ref refs/ --format='%(refname)'"
   "The `git' command to run to get a list of refs")
- 
+
 (defun pcmpl-git-get-refs (type)
   "Return a list of `git' refs filtered by TYPE"
   (with-temp-buffer
@@ -274,11 +287,11 @@ globals from it to add them to js2-additional-externs."
       (while (re-search-forward (concat "^refs/" type "/\\(.+\\)$") nil t)
         (add-to-list 'ref-list (match-string 1)))
       ref-list)))
- 
+
 (defun pcomplete/git ()
   "Completion for `git'"
   ;; Completion for the command argument.
-  (pcomplete-here* pcmpl-git-commands)  
+  (pcomplete-here* pcmpl-git-commands)
   ;; complete files/dirs forever if the command is `add' or `rm'
   (cond
    ((pcomplete-match (regexp-opt '("add" "rm")) 1)
@@ -286,25 +299,6 @@ globals from it to add them to js2-additional-externs."
    ;; provide branch completion for the commands `checkout' and 'merge'.
    ((pcomplete-match (regexp-opt '("checkout" "co" "merge")) 1)
     (pcomplete-here* (pcmpl-git-get-refs "heads")))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; mail
-;;
-(setq
- send-mail-function 'smtpmail-send-it
- message-send-mail-function 'smtpmail-send-it
- user-mail-address "bob.myers@kaybus.com"
- user-full-name "Bob Myers"
- smtpmail-starttls-credentials '(("corpmail.kaybus.com" 25 nil nil))
- smtpmail-auth-credentials  (expand-file-name "~/.authinfo")
- smtpmail-default-smtp-server "corpmail.kaybus.com"
- smtpmail-smtp-server "corpmail.kaybus.com"
- smtpmail-smtp-service 25
- smtpmail-debug-info t
- starttls-extra-arguments nil
- starttls-gnutls-program (executable-find "gnutls-cli")
- smtpmail-warn-about-unknown-extensions t
- starttls-use-gnutls t)
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -321,7 +315,7 @@ globals from it to add them to js2-additional-externs."
 (shell-command-to-string "pbpaste"))
 
 (defun paste-to-osx (text &optional push)
-(let ((process-connection-type nil)) 
+(let ((process-connection-type nil))
 (let ((proc (start-process "pbcopy" "*Messages*" "pbcopy")))
 (process-send-string proc text)
 (process-send-eof proc))))
@@ -347,7 +341,6 @@ globals from it to add them to js2-additional-externs."
 ;(message "eshell-ask-to-save-history is %s" eshell-ask-to-save-history)
 
 (defun eshell/ef (fname-regexp &rest dir) (ef fname-regexp default-directory))
-
 
 ;;; ---- path manipulation
 
@@ -435,7 +428,7 @@ PWD is not in a git repo (or the git command is not found)."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; marmalade
 (require 'package)
-(add-to-list 'package-archives 
+(add-to-list 'package-archives
     '("marmalade" .
       "http://marmalade-repo.org/packages/"))
 (package-initialize)
