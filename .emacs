@@ -1,9 +1,6 @@
 (setq load-path (cons (expand-file-name "~/elisp") load-path))
-(add-to-list 'load-path "~/.emacs.d/elpa/editorconfig-0.3/")
-(add-to-list 'load-path "~/.emacs.d/elpa/js2-mode-20140114/")
-(add-to-list 'load-path "~/.emacs.d/elpa/handlebars-mode-1.3/")
-(add-to-list 'load-path "~/.emacs.d/elpa/magit-1.2.1/")
-(add-to-list 'load-path "~/.emacs.d/highlight-indent")
+(add-to-list 'load-path "~/.emacs.d/package.el")
+(add-to-list 'load-path "~/.emacs.d/jshint-mode")
 (server-start)
 
 (global-unset-key "\C-o")
@@ -14,15 +11,14 @@
 (setq require-final-newline t)
 (global-auto-revert-mode t)
 (setq ruby-deep-indent-paren nil)
-
-(load "editorconfig")
-
-(require 'magit)
-(require 'highlight-indentation)
 (menu-bar-mode -1)
 (setq-default indent-tabs-mode nil)
 
-(require 'handlebars-mode)
+(load  "~/.emacs.d/highlight-chars.el")
+(load "~/.emacs.d/package.el")
+
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+
 
 ; maybe-new-shell -- go to existing shell, or make new shell, based on argument
 (defun maybe-new-shell (arg)
@@ -46,9 +42,9 @@
   )
 )
 
-(add-hook 'eshell-preoutput-filter-functions
+;;(add-hook 'eshell-preoutput-filter-functions
 ;;  'ansi-color-filter-apply) ;; this doesn't work, but the next line does!!
-  'ansi-color-apply)
+;;  'ansi-color-apply)
 
 (add-hook 'eshell-mode-hook
    (lambda ()
@@ -115,10 +111,10 @@
      (cons '("\\.handlebars\\'" . handlebars-mode) auto-mode-alist))
 
 (add-hook 'sgml-mode-hook
-	  (lambda ()
-	    ;; Default indentation to 2, but let SGML mode guess, too.
-	    (set (make-local-variable 'sgml-basic-offset) 2)
-	    (sgml-guess-indent)))
+	    (lambda ()
+	          ;; Default indentation to 2, but let SGML mode guess, too.
+	          (set (make-local-variable 'sgml-basic-offset) 2)
+		      (sgml-guess-indent)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; XSL mode
@@ -127,7 +123,7 @@
 
 ;; Turn on font lock when in XSL mode
 (add-hook 'xsl-mode-hook
-	  'turn-on-font-lock)
+	    'turn-on-font-lock)
 
 (setq auto-mode-alist
       (append
@@ -149,6 +145,10 @@
 ;;          (append '(("\\.js$" . javascript-mode))
 ;;                   auto-mode-alist))
 
+
+(add-hook 'js3-mode-hook
+     (lambda () (flymake-mode t)))
+
 (autoload 'js2-mode "js2" nil t)
 
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
@@ -156,12 +156,15 @@
 (autoload 'js2-mode
   "js2-mode" "Javascript mode" t)
 
+(autoload 'js3-mode
+  "js3-mode" "Javascript mode" t)
+
 (setq auto-mode-alist
       (append '(("\\.js$" . js2-mode))
-	      auto-mode-alist))
+	            auto-mode-alist))
 
 (add-hook 'js-mode-hook 'highlight-indentation-mode)
-(add-hook 'js2-mode-hook 'highlight-indentation-mode)
+(add-hook 'js3-mode-hook 'highlight-indentation-mode)
 
 (defun ldd-js2-parse-jshintrc ()
   "This looks recursively up for a .jshintrc and extracts the
@@ -188,8 +191,9 @@ globals from it to add them to js2-additional-externs."
   )
 )
 ;(add-hook 'js2-init-hook 'ldd-js2-parse-jshintrc)
+(add-hook 'js3-init-hook 'ldd-js2-parse-jshintrc)
 ;(js2-imenu-extras-mode)
-;(add-hook 'js2-mode-hook 'js2-imenu-extras-mode)
+;(add-hook 'js3-mode-hook 'js2-imenu-extras-mode)
 
 ;;cursor movemtn takes into account camelcasing bullshit
 (add-hook 'js2-mode-hook 'subword-mode)
@@ -213,13 +217,13 @@ globals from it to add them to js2-additional-externs."
 (load "compile")
 (setq compilation-error-regexp-alist
   (append '(("Source document (\\(.+\\)):.+line \\([0-9]+\\).+column \\([0-9]+\\)" 1 2 3))
-	  compilation-error-regexp-alist))
+	    compilation-error-regexp-alist))
 (setq compilation-error-regexp-alist
   (append '(("Stylesheet (\\(.+\\)):.+line \\([0-9]+\\).+column \\([0-9]+\\)" 1 2 3))
-	  compilation-error-regexp-alist))
+	    compilation-error-regexp-alist))
 (setq compilation-error-regexp-alist
   (append '(("Malformed expression: \\(.+\\),.+line \\([0-9]+\\).+column \\([0-9]+\\)" 1 2 3))
-	  compilation-error-regexp-alist))
+	    compilation-error-regexp-alist))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -243,7 +247,7 @@ globals from it to add them to js2-additional-externs."
  '(custom-safe-themes
    (quote
     ("180adb18379d7720859b39124cb6a79b4225d28cef4bfcf4ae2702b199a274c8" "e16a771a13a202ee6e276d06098bc77f008b73bbac4d526f160faa2d76c1dd0e" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "787574e2eb71953390ed2fb65c3831849a195fd32dfdd94b8b623c04c7f753f0" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" default)))
- '(js2-basic-offset 2)
+ '(js2-basic-offset 2))
 
 ;; create the autosave dir if necessary, since emacs won't.
 (make-directory "~/.emacs.d/autosaves/" t)
@@ -392,41 +396,12 @@ PWD is not in a git repo (or the git command is not found)."
 
 (put 'dired-find-alternate-file 'disabled nil)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ctags
-;; (defun build-ctags ()
-;;   (interactive)
-;;   (message "building project tags")
-;;   (let ((root "/Users/rtm/kaybus/kaybus/"))
-;;     (shell-command (concat "ctags -e -R --extra=+fq --exclude=db --exclude=test --exclude=.git --exclude=public -f " root "TAGS " root)))
-;;   (visit-project-tags)
-;;   (message "tags built successfully"))
-
-;; (defun visit-project-tags ()
-;;   (interactive)
-;;   (let ((tags-file (concat "/Users/rtm/kaybus/kaybus/" "TAGS")))
-;;     (visit-tags-table tags-file)
-;;     (message (concat "Loaded " tags-file))))
-
-;; (defun my-find-tag ()
-;;   (interactive)
-;;   (if (file-exists-p (concat "/Users/rtm/kaybus/kaybus/" "TAGS"))
-;;       (visit-project-tags)
-;;     (build-ctags))
-;;   (etags-select-find-tag-at-point))
-
-;; (global-set-key (kbd "M-.") 'my-find-tag)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; tern
-;;(add-to-list 'load-path "/usr/local/share/tern/emacs/")
-;;(autoload 'tern-mode "tern.el" nil t)
-;;
-;;(add-hook 'js2-mode-hook (lambda () (tern-mode t)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; marmalade
 (require 'package)
+(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
+                         ("marmalade" . "https://marmalade-repo.org/packages/")
+                         ("melpa" . "http://melpa.org/packages/")))
+
 (add-to-list 'package-archives
     '("marmalade" .
       "http://marmalade-repo.org/packages/"))
