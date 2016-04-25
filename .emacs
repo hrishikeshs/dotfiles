@@ -141,16 +141,16 @@
 ;; Javascript mode
 ;; see www.hesketh.com/...
 ;;
-;; (autoload 'javascript-mode
-;;      "javascript-mode" "Javascript mode" t)
+(autoload 'javascript-mode
+     "javascript-mode" "Javascript mode" t)
 
-;;    (setq auto-mode-alist
-;;          (append '(("\\.js$" . javascript-mode))
-;;                   auto-mode-alist))
+   (setq auto-mode-alist
+         (append '(("\\.js$" . js2-mode))
+                  auto-mode-alist))
 
 
 (add-hook 'js2-mode-hook
-     (lambda () (flymake-mode t)))
+               (lambda () (flycheck-mode t)))
 
 (autoload 'js2-mode "js2" nil t)
 
@@ -169,37 +169,36 @@
       (append '(("\\.tl$" . html-mode))
 	            auto-mode-alist))
 
-(add-hook 'js-mode-hook 'highlight-indentation-mode)
 (add-hook 'js2-mode-hook 'highlight-indentation-mode)
 (add-hook 'html-mode-hook 'highlight-indentation-mode)
 (add-hook 'scss-mode-hook 'highlight-indentation-mode)
 
-(defun ldd-js2-parse-jshintrc ()
-  "This looks recursively up for a .jshintrc and extracts the
-globals from it to add them to js2-additional-externs."
-  (let* ((jshintrc (find-file-recursively-up "^\\.jshintrc$"))
-         (json (and jshintrc
-                    (json-read-file (car jshintrc))))
-         (globals (and json
-                       (cdr (assq 'globals json))))
-        )
-    (when globals
-      (setq js2-additional-externs
-            (append
-             (mapcar (lambda (pair)
-                         (symbol-name (car pair))
-                     )
-                     globals
-             )
-             js2-additional-externs
-            )
-      )
-      (js2-reparse t)
-    )
-  )
-)
+;; (defun ldd-js2-parse-jshintrc ()
+;;   "This looks recursively up for a .jshintrc and extracts the
+;; globals from it to add them to js2-additional-externs."
+;;   (let* ((jshintrc (find-file-recursively-up "^\\.jshintrc$"))
+;;          (json (and jshintrc
+;;                     (json-read-file (car jshintrc))))
+;;          (globals (and json
+;;                        (cdr (assq 'globals json))))
+;;         )
+;;     (when globals
+;;       (setq js2-additional-externs
+;;             (append
+;;              (mapcar (lambda (pair)
+;;                          (symbol-name (car pair))
+;;                      )
+;;                      globals
+;;              )
+;;              js2-additional-externs
+;;             )
+;;       )
+;;       (js2-reparse t)
+;;     )
+;;   )
+;; )
 
-(add-hook 'js2-init-hook 'ldd-js2-parse-jshintrc)
+;; (add-hook 'js2-init-hook 'ldd-js2-parse-jshintrc)
 
 ;(js2-imenu-extras-mode)
 
@@ -459,3 +458,5 @@ PWD is not in a git repo (or the git command is not found)."
         (let ((tramp-mode nil)
               (default-directory "~"))
           (shell-command-to-string pbpaste)))))
+
+(setq flycheck-jshintrc "~/.jshintrc")
