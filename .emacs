@@ -1,5 +1,4 @@
-(setq load-path (cons (expand-file-name "~/elisp") load-path))
-(add-to-list 'load-path "~/.emacs.d/package.el")
+ (setq load-path (cons (expand-file-name "~/elisp") load-path))
 (add-to-list 'load-path "~/.emacs.d/jshint-mode")
 (server-start)
 
@@ -15,7 +14,6 @@
 (setq-default indent-tabs-mode nil)
 
 (load  "~/.emacs.d/highlight-chars.el")
-(load "~/.emacs.d/package.el")
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
@@ -101,12 +99,15 @@
 ;; (autoload 'css-mode "css-mode")
 ;; (setq auto-mode-alist
 ;;      (cons '("\\.css\\'" . css-mode) auto-mode-alist))
- (setq auto-mode-alist
+(setq auto-mode-alist
       (cons '("\\.scss\\'" . css-mode) auto-mode-alist))
 
 (autoload 'sgml-mode "sgml-mode")
+
 (setq auto-mode-alist
      (cons '("\\.html\\'" . sgml-mode) auto-mode-alist))
+
+
 (setq auto-mode-alist
      (cons '("\\.handlebars\\'" . handlebars-mode) auto-mode-alist))
 
@@ -116,6 +117,8 @@
 	          (set (make-local-variable 'sgml-basic-offset) 2)
 		      (sgml-guess-indent)))
 
+(setq auto-mode-alist
+      (cons '("\\.hbs\\'" . html-mode) auto-mode-alist))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; XSL mode
 ;;
@@ -146,25 +149,30 @@
 ;;                   auto-mode-alist))
 
 
-(add-hook 'js3-mode-hook
+(add-hook 'js2-mode-hook
      (lambda () (flymake-mode t)))
 
 (autoload 'js2-mode "js2" nil t)
 
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 
+(add-to-list 'auto-mode-alist '("\\.json$" . js2-mode))
+
 (autoload 'js2-mode
   "js2-mode" "Javascript mode" t)
-
-(autoload 'js3-mode
-  "js3-mode" "Javascript mode" t)
 
 (setq auto-mode-alist
       (append '(("\\.js$" . js2-mode))
 	            auto-mode-alist))
 
+(setq auto-mode-alist
+      (append '(("\\.tl$" . html-mode))
+	            auto-mode-alist))
+
 (add-hook 'js-mode-hook 'highlight-indentation-mode)
-(add-hook 'js3-mode-hook 'highlight-indentation-mode)
+(add-hook 'js2-mode-hook 'highlight-indentation-mode)
+(add-hook 'html-mode-hook 'highlight-indentation-mode)
+(add-hook 'scss-mode-hook 'highlight-indentation-mode)
 
 (defun ldd-js2-parse-jshintrc ()
   "This looks recursively up for a .jshintrc and extracts the
@@ -190,10 +198,12 @@ globals from it to add them to js2-additional-externs."
     )
   )
 )
-;(add-hook 'js2-init-hook 'ldd-js2-parse-jshintrc)
-(add-hook 'js3-init-hook 'ldd-js2-parse-jshintrc)
+
+(add-hook 'js2-init-hook 'ldd-js2-parse-jshintrc)
+
 ;(js2-imenu-extras-mode)
-;(add-hook 'js3-mode-hook 'js2-imenu-extras-mode)
+
+;(add-hook 'js2-mode-hook 'js2-imenu-extras-mode)
 
 ;;cursor movemtn takes into account camelcasing bullshit
 (add-hook 'js2-mode-hook 'subword-mode)
@@ -425,3 +435,27 @@ PWD is not in a git repo (or the git command is not found)."
 (setq auto-mode-alist
       (cons '("\\.po\\'\\|\\.po\\." . po-mode) auto-mode-alist))
 (autoload 'po-mode "po-mode" "Major mode for translators to edit PO files" t)
+
+
+(setq woman-path "/usr/share/man/man1/")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(auto-insert-mode) ;;; Adds hook to find-files-hook
+(setq auto-insert-directory "~/.emacs-file-templates")
+(setq auto-insert-query nil)
+
+(define-auto-insert "\.js" "js-template.txt")
+
+(define-auto-insert "\.hbs" "hbs-template.txt")
+
+;;;Make Copy-Paste etc work properly on ssh when using mac
+
+(defun copy-from-osx ()
+  "Handle copy/paste intelligently on osx."
+  (let ((pbpaste (purecopy "/usr/bin/pbpaste")))
+    (if (and (eq system-type 'darwin)
+             (file-exists-p pbpaste))
+        (let ((tramp-mode nil)
+              (default-directory "~"))
+          (shell-command-to-string pbpaste)))))
