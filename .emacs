@@ -1,4 +1,4 @@
- (setq load-path (cons (expand-file-name "~/elisp") load-path))
+(setq load-path (cons (expand-file-name "~/elisp") load-path))
 (add-to-list 'load-path "~/.emacs.d/jshint-mode")
 (server-start)
 
@@ -13,7 +13,9 @@
 (menu-bar-mode -1)
 (setq-default indent-tabs-mode nil)
 
-(load  "~/.emacs.d/highlight-chars.el")
+(load  "~/.emacs.d/elpa/highlight-chars-20170223.740/highlight-chars.el")
+
+(load  "~/.emacs.d/elpa/outline-magic.el")
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
@@ -149,12 +151,12 @@
                   auto-mode-alist))
 
 
-(add-hook 'js2-mode-hook
-               (lambda () (flycheck-mode t)))
 
 (autoload 'js2-mode "js2" nil t)
 
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+
+(add-to-list 'auto-mode-alist '("\\.ts$" . js2-mode))
 
 (add-to-list 'auto-mode-alist '("\\.json$" . js2-mode))
 
@@ -172,6 +174,7 @@
 (add-hook 'js2-mode-hook 'highlight-indentation-mode)
 (add-hook 'html-mode-hook 'highlight-indentation-mode)
 (add-hook 'scss-mode-hook 'highlight-indentation-mode)
+(add-hook 'go-mode-hook 'highlight-indentation-mode)
 
 ;; (defun ldd-js2-parse-jshintrc ()
 ;;   "This looks recursively up for a .jshintrc and extracts the
@@ -256,7 +259,11 @@
  '(custom-safe-themes
    (quote
     ("180adb18379d7720859b39124cb6a79b4225d28cef4bfcf4ae2702b199a274c8" "e16a771a13a202ee6e276d06098bc77f008b73bbac4d526f160faa2d76c1dd0e" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "787574e2eb71953390ed2fb65c3831849a195fd32dfdd94b8b623c04c7f753f0" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" default)))
- '(js2-basic-offset 2))
+ '(js-indent-level 2)
+ '(js2-basic-offset 2)
+ '(package-selected-packages
+   (quote
+    (fold-this git-wip-timemachine git-time-metric typescript-mode typescript python-mode magit json-mode js2-mode highlight-indentation highlight-indent-guides highlight-chars gradle-mode go-playground go-errcheck git-timemachine))))
 
 ;; create the autosave dir if necessary, since emacs won't.
 (make-directory "~/.emacs.d/autosaves/" t)
@@ -460,3 +467,20 @@ PWD is not in a git repo (or the git command is not found)."
           (shell-command-to-string pbpaste)))))
 
 (setq flycheck-jshintrc "~/.jshintrc")
+
+
+(add-hook 'outline-mode-hook
+  (lambda ()
+  (require 'outline-cycle)))
+
+(add-hook 'outline-minor-mode-hook
+  (lambda ()
+    (require 'outline-magic)
+    (define-key outline-minor-mode-map  (kbd "<C-tab>") 'outline-cycle)))
+
+
+;; code folding key bindings M-x package-install fold-this
+(require 'fold-this)
+(global-set-key (kbd "C-c C-f") 'fold-this-all)
+(global-set-key (kbd "C-c C-F") 'fold-this)
+(global-set-key (kbd "C-c C-u") 'fold-this-unfold-all)
