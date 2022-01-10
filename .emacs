@@ -1,5 +1,6 @@
 (setq load-path (cons (expand-file-name "~/elisp") load-path))
 (add-to-list 'load-path "~/.emacs.d/jshint-mode")
+
 (server-start)
 
 (global-unset-key "\C-o")
@@ -12,10 +13,6 @@
 (setq ruby-deep-indent-paren nil)
 (menu-bar-mode -1)
 (setq-default indent-tabs-mode nil)
-
-(load  "~/.emacs.d/elpa/highlight-chars-20170223.740/highlight-chars.el")
-
-(load  "~/.emacs.d/elpa/outline-magic.el")
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
@@ -268,20 +265,6 @@
 ;; create the autosave dir if necessary, since emacs won't.
 (make-directory "~/.emacs.d/autosaves/" t)
 
-;; suppress creation of dot-hash files
-;; (fmakunbound 'lock-buffer)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; auto completion inside meacs shell
-;;
-;;(autoload 'bash-completion-dynamic-complete
-;;  "bash-completion"
-;;  "BASH completion hook")
-;;(add-hook 'shell-dynamic-complete-functions
-;;  'bash-completion-dynamic-complete)
-;;(add-hook 'shell-command-complete-functions
-;;  'bash-completion-dynamic-complete)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; pcomplete for git
 ;; http://www.masteringemacs.org/articles/2012/01/16/pcomplete-context-sensitive-completion-emacs/
@@ -346,9 +329,9 @@
 ;; eshell
 ;;
 (require 'em-smart)
-;;(eshell-smart-initialize)
 
-(setq eshell-history-size 1024)
+
+(setq eshell-history-size 2048)
 (setq eshell-prompt-regexp "^[^#$]*[#$] ")
 
 (load "em-hist")           ; So the history vars are defined
@@ -412,25 +395,11 @@ PWD is not in a git repo (or the git command is not found)."
 
 (put 'dired-find-alternate-file 'disabled nil)
 
-;; marmalade
+
+
+
 (require 'package)
-(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-                         ("marmalade" . "https://marmalade-repo.org/packages/")
-                         ("melpa" . "http://melpa.org/packages/")))
-
-(add-to-list 'package-archives
-    '("marmalade" .
-      "http://marmalade-repo.org/packages/"))
-(package-initialize)
-
-
-;;melpa
-(require 'package)
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.org/packages/") t)
-(when (< emacs-major-version 24)
-  ;; For important compatibility libraries like cl-lib
-  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
 
 
