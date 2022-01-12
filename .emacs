@@ -453,3 +453,6 @@ PWD is not in a git repo (or the git command is not found)."
 (global-set-key (kbd "C-c C-f") 'fold-this-all)
 (global-set-key (kbd "C-c C-F") 'fold-this)
 (global-set-key (kbd "C-c C-u") 'fold-this-unfold-all)
+
+(require 'highlight-indentation)
+(set-face-background 'highlight-indentation-face "lightgray")
