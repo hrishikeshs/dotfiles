@@ -295,7 +295,8 @@ PWD is not in a git repo (or the git command is not found)."
 (add-hook 'lsp-mode-hook 'company-mode)
 (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
 
-
+(projectile-global-mode)
+(setq projectile-enable-caching t)
 ;; customizations for finding definitions and references in JS/TS projects
 (global-set-key "\C-x\C-i" 'lsp-ui-peek-find-definitions)
 (global-set-key "\C-x\C-e" 'lsp-ui-peek-find-references)
