@@ -4,6 +4,7 @@
 
 (setq load-path (cons (expand-file-name "~/elisp") load-path))
 (add-to-list 'load-path "~/.emacs.d/add-node-modules-path")
+
 (server-start)
 (global-unset-key "\C-o")
 (global-set-key "\C-x5" 'split-window-horizontally)
@@ -18,7 +19,6 @@
 (menu-bar-mode -1)
 (setq-default indent-tabs-mode nil)
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
-
 
 (require 'git-commit)
 (require 'highlight-indentation)
@@ -285,6 +285,7 @@ PWD is not in a git repo (or the git command is not found)."
 
 
 (add-hook 'prog-mode-hook 'highlight-indentation-mode)
+(add-hook 'prog-mode-hook 'helm-mode)
 (add-hook 'typescript-mode-hook 'lsp)
 (add-hook 'typescript-mode-hook 'prettier-rc-mode)
 (add-hook 'js2-mode-hook 'prettier-rc-mode)
@@ -298,7 +299,8 @@ PWD is not in a git repo (or the git command is not found)."
 ;; customizations for finding definitions and references in JS/TS projects
 (global-set-key "\C-x\C-i" 'lsp-ui-peek-find-definitions)
 (global-set-key "\C-x\C-e" 'lsp-ui-peek-find-references)
-
+(global-set-key "\C-xf" 'projectile-find-file)
+(global-set-key "\C-xh" 'flycheck-list-errors)
 (setq lsp-ui-sideline-show-flycheck t)
 
 
@@ -316,6 +318,8 @@ PWD is not in a git repo (or the git command is not found)."
       (setq-local flycheck-javascript-eslint-executable eslint))))
 (add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
 
+
+
 ; http://www.flycheck.org/manual/latest/index.html
 (require 'flycheck)
 (add-hook 'lsp-mode-hook #'global-flycheck-mode)
@@ -332,13 +336,9 @@ PWD is not in a git repo (or the git command is not found)."
 ;; disable json-jsonlist checking for json files
 (setq-default flycheck-disabled-checkers
   (append flycheck-disabled-checkers
-    '(json-jsonlist)))
+          '(json-jsonlist)))
 
-
-
-
-
-
+(add-hook 'lsp-after-apply-edits-hook (lambda (operation) (when (eq operation 'rename) (save-buffer))))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -346,7 +346,7 @@ PWD is not in a git repo (or the git command is not found)."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(use-package-hydra flycheck-tip lsp-treemacs yasnippet helm-describe-modes helm-mode-manager eslint-rc flycheck lsp-mode prettier-rc lsp-ui jsonnet-mode tree-sitter-langs eslint-fix yaml-mode which-key websocket web-server web-mode-edit-element use-package typescript-mode solarized-theme projectile prettier-js prettier monokai-theme magit json-mode highlight-indentation helm-xref helm-lsp git-timemachine fold-this dap-mode company color-theme-sanityinc-solarized add-node-modules-path)))
+   '(markdown-preview-mode outline-magic gitconfig use-package-hydra flycheck-tip lsp-treemacs yasnippet helm-describe-modes helm-mode-manager eslint-rc flycheck lsp-mode prettier-rc lsp-ui jsonnet-mode tree-sitter-langs eslint-fix yaml-mode which-key websocket web-server web-mode-edit-element use-package typescript-mode solarized-theme projectile prettier-js prettier monokai-theme magit json-mode highlight-indentation helm-xref helm-lsp git-timemachine fold-this dap-mode company color-theme-sanityinc-solarized add-node-modules-path)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
