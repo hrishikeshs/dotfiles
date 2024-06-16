@@ -1,21 +1,31 @@
+;;; Emacs config ;;;
+
+;;; CODE:
+
 (setq load-path (cons (expand-file-name "~/elisp") load-path))
-(add-to-list 'load-path "~/.emacs.d/jshint-mode")
-
+(add-to-list 'load-path "~/.emacs.d/add-node-modules-path")
 (server-start)
-
 (global-unset-key "\C-o")
 (global-set-key "\C-x5" 'split-window-horizontally)
+
 (setq mail-self-blind t)
 (setq sendmail-coding-system 'iso-2022-jp)
 (setq visible-bell 1)
 (setq require-final-newline t)
+
 (global-auto-revert-mode t)
-(setq ruby-deep-indent-paren nil)
+;; disable menu bar in buffers
 (menu-bar-mode -1)
 (setq-default indent-tabs-mode nil)
-
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
+
+(require 'git-commit)
+(require 'highlight-indentation)
+
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(package-initialize)
 
 ; maybe-new-shell -- go to existing shell, or make new shell, based on argument
 (defun maybe-new-shell (arg)
@@ -39,32 +49,19 @@
   )
 )
 
-;;(add-hook 'eshell-preoutput-filter-functions
-;;  'ansi-color-filter-apply) ;; this doesn't work, but the next line does!!
-;;  'ansi-color-apply)
 
 (add-hook 'eshell-mode-hook
    (lambda ()
      (setenv "TERM" "emacs") ; enable colors
      ))
 
-;; Bob's customizations!
-;;
-(global-set-key "\C-o\C-s" 'maybe-new-shell)
-(global-set-key "\C-o\C-l" 'goto-line)
-(global-set-key "\C-o\C-r" 'revert-buffer)
-(global-set-key "\C-o\C-c" 'compile)
-(global-set-key "\C-o\C-g" 'magit-status)
-(global-set-key "\C-o\C-v" 'find-file-at-point)
-(global-set-key "\C-o\C-f" 'find-name-dired)
-(global-set-key "\C-o\C-z" 'zap-to-char)
-(global-set-key "\C-o\C-e" 'js2-next-error)
 
 (defun back()
   (interactive)
   (other-window -1))
 
 (global-set-key "\C-o\C-p" 'back)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; make C-o C-s work from dired
 ;;
@@ -81,158 +78,11 @@
 
 (global-font-lock-mode t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; python mode
-;
-(setq auto-mode-alist
-      (cons '("\\.py$" . python-mode) auto-mode-alist))
-(setq interpreter-mode-alist
-      (cons '("python" . python-mode)
-            interpreter-mode-alist))
-
-(autoload 'python-mode "python-mode" "Python editing mode." t)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; css mode
-;;
-;; (autoload 'css-mode "css-mode")
-;; (setq auto-mode-alist
-;;      (cons '("\\.css\\'" . css-mode) auto-mode-alist))
-(setq auto-mode-alist
-      (cons '("\\.scss\\'" . css-mode) auto-mode-alist))
-
-(autoload 'sgml-mode "sgml-mode")
-
-(setq auto-mode-alist
-     (cons '("\\.html\\'" . sgml-mode) auto-mode-alist))
-
-
-(setq auto-mode-alist
-     (cons '("\\.handlebars\\'" . handlebars-mode) auto-mode-alist))
-
-(add-hook 'sgml-mode-hook
-	    (lambda ()
-	          ;; Default indentation to 2, but let SGML mode guess, too.
-	          (set (make-local-variable 'sgml-basic-offset) 2)
-		      (sgml-guess-indent)))
-
-(setq auto-mode-alist
-      (cons '("\\.hbs\\'" . html-mode) auto-mode-alist))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; XSL mode
-;;
-(autoload 'xsl-mode "xslide" "Major mode for XSL stylesheets." t)
-
-;; Turn on font lock when in XSL mode
-(add-hook 'xsl-mode-hook
-	    'turn-on-font-lock)
-
-(setq auto-mode-alist
-      (append
-       (list
-	'("\\.xsl" . xsl-mode))
-       auto-mode-alist))
-
-;; Uncomment if using abbreviations
-;; (abbrev-mode t)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Javascript mode
-;; see www.hesketh.com/...
-;;
-(autoload 'javascript-mode
-     "javascript-mode" "Javascript mode" t)
-
-   (setq auto-mode-alist
-         (append '(("\\.js$" . js2-mode))
-                  auto-mode-alist))
-
-
-
-(autoload 'js2-mode "js2" nil t)
-
-(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
-
-(add-to-list 'auto-mode-alist '("\\.ts$" . js2-mode))
-
-(add-to-list 'auto-mode-alist '("\\.json$" . js2-mode))
-
-(autoload 'js2-mode
-  "js2-mode" "Javascript mode" t)
-
-(setq auto-mode-alist
-      (append '(("\\.js$" . js2-mode))
-	            auto-mode-alist))
-
-(setq auto-mode-alist
-      (append '(("\\.tl$" . html-mode))
-	            auto-mode-alist))
-
-(add-hook 'js2-mode-hook 'highlight-indentation-mode)
-(add-hook 'html-mode-hook 'highlight-indentation-mode)
-(add-hook 'scss-mode-hook 'highlight-indentation-mode)
-(add-hook 'go-mode-hook 'highlight-indentation-mode)
-
-;; (defun ldd-js2-parse-jshintrc ()
-;;   "This looks recursively up for a .jshintrc and extracts the
-;; globals from it to add them to js2-additional-externs."
-;;   (let* ((jshintrc (find-file-recursively-up "^\\.jshintrc$"))
-;;          (json (and jshintrc
-;;                     (json-read-file (car jshintrc))))
-;;          (globals (and json
-;;                        (cdr (assq 'globals json))))
-;;         )
-;;     (when globals
-;;       (setq js2-additional-externs
-;;             (append
-;;              (mapcar (lambda (pair)
-;;                          (symbol-name (car pair))
-;;                      )
-;;                      globals
-;;              )
-;;              js2-additional-externs
-;;             )
-;;       )
-;;       (js2-reparse t)
-;;     )
-;;   )
-;; )
-
-;; (add-hook 'js2-init-hook 'ldd-js2-parse-jshintrc)
-
-;(js2-imenu-extras-mode)
-
-;(add-hook 'js2-mode-hook 'js2-imenu-extras-mode)
-
-;;cursor movemtn takes into account camelcasing bullshit
-(add-hook 'js2-mode-hook 'subword-mode)
-
-;; make fooBar look like foo_Bar
-;(add-hook 'js2-mode-hook 'glasses-mode)
-
-;; match parens
-(add-hook 'js2-mode-hook 'show-paren-mode)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; yasnippet
-;;(add-to-list 'load-path
-;;              "~/elisp/yasnippet")
-;;(require 'yasnippet)
-;;(yas-global-mode 1)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; parse error messages from 4xslt
-;;
-(load "compile")
-(setq compilation-error-regexp-alist
-  (append '(("Source document (\\(.+\\)):.+line \\([0-9]+\\).+column \\([0-9]+\\)" 1 2 3))
-	    compilation-error-regexp-alist))
-(setq compilation-error-regexp-alist
-  (append '(("Stylesheet (\\(.+\\)):.+line \\([0-9]+\\).+column \\([0-9]+\\)" 1 2 3))
-	    compilation-error-regexp-alist))
-(setq compilation-error-regexp-alist
-  (append '(("Malformed expression: \\(.+\\),.+line \\([0-9]+\\).+column \\([0-9]+\\)" 1 2 3))
-	    compilation-error-regexp-alist))
+(defun enable-minor-mode (my-pair)
+  "Enable minor mode if filename match the regexp.  MY-PAIR is a cons cell (regexp . minor-mode)."
+  (if (buffer-file-name)
+      (if (string-match (car my-pair) buffer-file-name)
+          (funcall (cdr my-pair)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -245,22 +95,6 @@
       kept-new-versions      20 ; how many of the newest versions to keep
       kept-old-versions      5) ; and how many of the old
 
-;; Put autosave files (ie #foo#) in ~/.emacs.d/.
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(auto-save-file-name-transforms (quote ((".*" "~/.emacs.d/autosaves/\\1" t))))
- '(css-indent-offset 2)
- '(custom-safe-themes
-   (quote
-    ("180adb18379d7720859b39124cb6a79b4225d28cef4bfcf4ae2702b199a274c8" "e16a771a13a202ee6e276d06098bc77f008b73bbac4d526f160faa2d76c1dd0e" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "787574e2eb71953390ed2fb65c3831849a195fd32dfdd94b8b623c04c7f753f0" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" default)))
- '(js-indent-level 2)
- '(js2-basic-offset 2)
- '(package-selected-packages
-   (quote
-    (fold-this git-wip-timemachine git-time-metric typescript-mode typescript python-mode magit json-mode js2-mode highlight-indentation highlight-indent-guides highlight-chars gradle-mode go-playground go-errcheck git-timemachine))))
 
 ;; create the autosave dir if necessary, since emacs won't.
 (make-directory "~/.emacs.d/autosaves/" t)
@@ -302,12 +136,6 @@
    ((pcomplete-match (regexp-opt '("checkout" "co" "merge")) 1)
     (pcomplete-here* (pcmpl-git-get-refs "heads")))))
 
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mac osx clipboard
@@ -319,8 +147,8 @@
 (defun paste-to-osx (text &optional push)
 (let ((process-connection-type nil))
 (let ((proc (start-process "pbcopy" "*Messages*" "pbcopy")))
-(process-send-string proc text)
-(process-send-eof proc))))
+  (process-send-string proc text)
+  (process-send-eof proc))))
 
 (setq interprogram-cut-function 'paste-to-osx)
 (setq interprogram-paste-function 'copy-from-osx)
@@ -329,12 +157,11 @@
 ;; eshell
 ;;
 (require 'em-smart)
-
-
-(setq eshell-history-size 2048)
+(setq eshell-history-size 10000)
 (setq eshell-prompt-regexp "^[^#$]*[#$] ")
 
 (load "em-hist")           ; So the history vars are defined
+
 (if (boundp 'eshell-save-history-on-exit)
     (setq eshell-save-history-on-exit t)) ; Don't ask, just save
 ;(message "eshell-ask-to-save-history is %s" eshell-ask-to-save-history)
@@ -392,37 +219,11 @@ PWD is not in a git repo (or the git command is not found)."
          (propertize " # " 'face 'default))))
 
 (setq eshell-highlight-prompt nil)
-
 (put 'dired-find-alternate-file 'disabled nil)
-
-
-
-
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-(package-initialize)
-
-
 (put 'narrow-to-region 'disabled nil)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; po-mode
-(setq auto-mode-alist
-      (cons '("\\.po\\'\\|\\.po\\." . po-mode) auto-mode-alist))
-(autoload 'po-mode "po-mode" "Major mode for translators to edit PO files" t)
-
-
-(setq woman-path "/usr/share/man/man1/")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (auto-insert-mode) ;;; Adds hook to find-files-hook
 (setq auto-insert-directory "~/.emacs-file-templates")
 (setq auto-insert-query nil)
-
-(define-auto-insert "\.js" "js-template.txt")
-
-(define-auto-insert "\.hbs" "hbs-template.txt")
 
 ;;;Make Copy-Paste etc work properly on ssh when using mac
 
@@ -435,24 +236,120 @@ PWD is not in a git repo (or the git command is not found)."
               (default-directory "~"))
           (shell-command-to-string pbpaste)))))
 
-(setq flycheck-jshintrc "~/.jshintrc")
-
-
-(add-hook 'outline-mode-hook
-  (lambda ()
-  (require 'outline-cycle)))
-
-(add-hook 'outline-minor-mode-hook
-  (lambda ()
-    (require 'outline-magic)
-    (define-key outline-minor-mode-map  (kbd "<C-tab>") 'outline-cycle)))
-
-
-;; code folding key bindings M-x package-install fold-this
-(require 'fold-this)
-(global-set-key (kbd "C-c C-f") 'fold-this-all)
-(global-set-key (kbd "C-c C-F") 'fold-this)
-(global-set-key (kbd "C-c C-u") 'fold-this-unfold-all)
-
-(require 'highlight-indentation)
 (set-face-background 'highlight-indentation-face "lightgray")
+(put 'downcase-region 'disabled nil)
+
+; The emacs default is too low 4k considering that the some of the language server responses are in 800k - 3M range.
+(setq read-process-output-max (* 1024 1024 100)) ;; 10mb
+
+;; emacs gc default is too low
+(setq gc-cons-threshold 100000000)
+(setq company-idle-delay 0.0
+      company-minimum-prefix-length 1
+      create-lockfiles nil) ;; lock files will kill `npm start'
+
+(use-package tree-sitter
+  :ensure t
+  :config
+  ;; activate tree-sitter on any buffer containing code for which it has a parser available
+  (global-tree-sitter-mode)
+  ;; you can easily see the difference tree-sitter-hl-mode makes for python, ts or tsx
+  ;; by switching on and off
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+
+(use-package tree-sitter-langs
+  :ensure t
+  :after tree-sitter)
+
+;;;;;;; Web mode config for most of the web development ;;;;;;;
+
+(defun web-mode-init-hook ()
+  "Hooks for Web mode"
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2)
+  (setq web-mode-enable-auto-pairing t)
+  (setq web-mode-enable-auto-closing t)
+  (setq web-mode-enable-current-element-highlight t)
+  (setq web-mode-enable-current-column-highlight t))
+
+
+(which-key-mode)
+
+
+(with-eval-after-load 'lsp-mode
+  (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
+  (prettier-rc-mode))
+
+;;;;;; End web-mode config ;;;;;
+
+
+(add-hook 'prog-mode-hook 'highlight-indentation-mode)
+(add-hook 'typescript-mode-hook 'lsp)
+(add-hook 'typescript-mode-hook 'prettier-rc-mode)
+(add-hook 'js2-mode-hook 'prettier-rc-mode)
+(add-hook 'web-mode-hook 'prettier-rc-mode)
+
+(add-hook 'lsp-mode-hook 'lsp-ui-mode)
+(add-hook 'lsp-mode-hook 'company-mode)
+(add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
+
+
+;; customizations for finding definitions and references in JS/TS projects
+(global-set-key "\C-x\C-i" 'lsp-ui-peek-find-definitions)
+(global-set-key "\C-x\C-e" 'lsp-ui-peek-find-references)
+
+(setq lsp-ui-sideline-show-flycheck t)
+
+
+
+;; use local eslint from node_modules before global
+;; http://emacs.stackexchange.com/questions/21205/flycheck-with-file-relative-eslint-executable
+(defun my/use-eslint-from-node-modules ()
+  (let* ((root (locate-dominating-file
+                (or (buffer-file-name) default-directory)
+                "node_modules"))
+         (eslint (and root
+                      (expand-file-name "node_modules/eslint/bin/eslint.js"
+                                        root))))
+    (when (and eslint (file-executable-p eslint))
+      (setq-local flycheck-javascript-eslint-executable eslint))))
+(add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
+
+; http://www.flycheck.org/manual/latest/index.html
+(require 'flycheck)
+(add-hook 'lsp-mode-hook #'global-flycheck-mode)
+
+;; disable jshint since we prefer eslint checking
+(setq-default flycheck-disabled-checkers
+  (append flycheck-disabled-checkers
+    '(javascript-jshint)))
+
+;; use eslint with web-mode for jsx files
+(flycheck-add-mode 'javascript-eslint 'typescript-mode)
+(flycheck-add-mode 'javascript-eslint 'web-mode)
+
+;; disable json-jsonlist checking for json files
+(setq-default flycheck-disabled-checkers
+  (append flycheck-disabled-checkers
+    '(json-jsonlist)))
+
+
+
+
+
+
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(use-package-hydra flycheck-tip lsp-treemacs yasnippet helm-describe-modes helm-mode-manager eslint-rc flycheck lsp-mode prettier-rc lsp-ui jsonnet-mode tree-sitter-langs eslint-fix yaml-mode which-key websocket web-server web-mode-edit-element use-package typescript-mode solarized-theme projectile prettier-js prettier monokai-theme magit json-mode highlight-indentation helm-xref helm-lsp git-timemachine fold-this dap-mode company color-theme-sanityinc-solarized add-node-modules-path)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
