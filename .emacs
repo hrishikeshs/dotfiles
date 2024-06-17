@@ -1,13 +1,15 @@
 ;;; Emacs config ;;;
-
 ;;; CODE:
-
 (setq load-path (cons (expand-file-name "~/elisp") load-path))
 (add-to-list 'load-path "~/.emacs.d/add-node-modules-path")
+(add-to-list 'load-path "~/.emacs.d/highlight-indentation-mode")
+(load "~/.emacs.d/highlight-indentation-mode.el")
+
 
 (server-start)
 (global-unset-key "\C-o")
 (global-set-key "\C-x5" 'split-window-horizontally)
+
 
 (setq mail-self-blind t)
 (setq sendmail-coding-system 'iso-2022-jp)
@@ -21,8 +23,6 @@
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 (require 'git-commit)
-(require 'highlight-indentation)
-
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
@@ -276,27 +276,23 @@ PWD is not in a git repo (or the git command is not found)."
 
 (which-key-mode)
 
-
-(with-eval-after-load 'lsp-mode
-  (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
-  (prettier-rc-mode))
-
 ;;;;;; End web-mode config ;;;;;
 
-
 (add-hook 'prog-mode-hook 'highlight-indentation-mode)
-(add-hook 'prog-mode-hook 'helm-mode)
 (add-hook 'typescript-mode-hook 'lsp)
 (add-hook 'typescript-mode-hook 'prettier-rc-mode)
 (add-hook 'js2-mode-hook 'prettier-rc-mode)
 (add-hook 'web-mode-hook 'prettier-rc-mode)
-
 (add-hook 'lsp-mode-hook 'lsp-ui-mode)
 (add-hook 'lsp-mode-hook 'company-mode)
 (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
 
+
 (projectile-global-mode)
 (setq projectile-enable-caching t)
+
+(require 'helm)
+(helm-mode)
 ;; customizations for finding definitions and references in JS/TS projects
 (global-set-key "\C-x\C-i" 'lsp-ui-peek-find-definitions)
 (global-set-key "\C-x\C-e" 'lsp-ui-peek-find-references)
@@ -309,6 +305,7 @@ PWD is not in a git repo (or the git command is not found)."
 ;; use local eslint from node_modules before global
 ;; http://emacs.stackexchange.com/questions/21205/flycheck-with-file-relative-eslint-executable
 (defun my/use-eslint-from-node-modules ()
+  ;locate dominating file
   (let* ((root (locate-dominating-file
                 (or (buffer-file-name) default-directory)
                 "node_modules"))
@@ -319,10 +316,9 @@ PWD is not in a git repo (or the git command is not found)."
       (setq-local flycheck-javascript-eslint-executable eslint))))
 (add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
 
-
-
 ; http://www.flycheck.org/manual/latest/index.html
 (require 'flycheck)
+
 (add-hook 'lsp-mode-hook #'global-flycheck-mode)
 
 ;; disable jshint since we prefer eslint checking
@@ -333,21 +329,32 @@ PWD is not in a git repo (or the git command is not found)."
 ;; use eslint with web-mode for jsx files
 (flycheck-add-mode 'javascript-eslint 'typescript-mode)
 (flycheck-add-mode 'javascript-eslint 'web-mode)
+(flycheck-add-mode 'javascript-eslint 'lsp-mode)
 
 ;; disable json-jsonlist checking for json files
 (setq-default flycheck-disabled-checkers
   (append flycheck-disabled-checkers
-          '(json-jsonlist)))
+    '(json-jsonlist)))
 
-(add-hook 'lsp-after-apply-edits-hook (lambda (operation) (when (eq operation 'rename) (save-buffer))))
+
+
+
+
+
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(auto-save-file-name-transforms '((".*" "~/.emacs.d/autosaves/\\1" t)))
+ '(css-indent-offset 2)
+ '(custom-safe-themes
+   '("180adb18379d7720859b39124cb6a79b4225d28cef4bfcf4ae2702b199a274c8" "e16a771a13a202ee6e276d06098bc77f008b73bbac4d526f160faa2d76c1dd0e" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "787574e2eb71953390ed2fb65c3831849a195fd32dfdd94b8b623c04c7f753f0" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" default))
+ '(js-indent-level 2)
+ '(js2-basic-offset 2)
  '(package-selected-packages
-   '(markdown-preview-mode outline-magic gitconfig use-package-hydra flycheck-tip lsp-treemacs yasnippet helm-describe-modes helm-mode-manager eslint-rc flycheck lsp-mode prettier-rc lsp-ui jsonnet-mode tree-sitter-langs eslint-fix yaml-mode which-key websocket web-server web-mode-edit-element use-package typescript-mode solarized-theme projectile prettier-js prettier monokai-theme magit json-mode highlight-indentation helm-xref helm-lsp git-timemachine fold-this dap-mode company color-theme-sanityinc-solarized add-node-modules-path)))
+   '(helm-ag helm-mode-manager helm-z web-mode prettier-rc prettier yasnippet projectile lsp-ui flycheck-tip company lsp-treemacs eslint-fix eslint-rc lsp-mode flycheck which-key tree-sitter-langs outline-magic tree-sitter gitconfig git-modes transpose-frame markdown-mode prettier-js fold-this git-wip-timemachine git-time-metric typescript-mode typescript python-mode magit json-mode js2-mode highlight-indentation highlight-indent-guides highlight-chars gradle-mode go-playground go-errcheck git-timemachine)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
