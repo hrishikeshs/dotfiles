@@ -17,6 +17,7 @@
 (setq require-final-newline t)
 
 (global-auto-revert-mode t)
+(setq global-auto-revert-non-file-buffers t)
 ;; disable menu bar in buffers
 (menu-bar-mode -1)
 (setq-default indent-tabs-mode nil)
@@ -25,7 +26,12 @@
 (require 'git-commit)
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("gnu-devel" . "https://elpa.gnu.org/devel/"))
 (package-initialize)
+
+
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
 
 ; maybe-new-shell -- go to existing shell, or make new shell, based on argument
 (defun maybe-new-shell (arg)
@@ -76,7 +82,7 @@
 ;; define favorite mappings
 (define-key dired-o-map "s" 'maybe-new-shell)
 
-(global-font-lock-mode t)
+;(global-font-lock-mode t)
 
 (defun enable-minor-mode (my-pair)
   "Enable minor mode if filename match the regexp.  MY-PAIR is a cons cell (regexp . minor-mode)."
@@ -278,6 +284,7 @@ PWD is not in a git repo (or the git command is not found)."
 
 ;;;;;; End web-mode config ;;;;;
 
+
 (add-hook 'prog-mode-hook 'highlight-indentation-mode)
 (add-hook 'typescript-mode-hook 'lsp)
 (add-hook 'typescript-mode-hook 'prettier-rc-mode)
@@ -289,6 +296,10 @@ PWD is not in a git repo (or the git command is not found)."
 
 
 (projectile-global-mode)
+
+(add-to-list 'projectile-globally-ignored-directories "-/*/node_modules")
+(add-to-list 'projectile-globally-ignored-directories "-/*/.git/")
+
 (setq projectile-enable-caching t)
 
 (require 'helm)
@@ -298,6 +309,7 @@ PWD is not in a git repo (or the git command is not found)."
 (global-set-key "\C-x\C-e" 'lsp-ui-peek-find-references)
 (global-set-key "\C-xf" 'projectile-find-file)
 (global-set-key "\C-xh" 'flycheck-list-errors)
+(global-set-key "\C-x\C-l" 'lsp-execute-code-action)
 (setq lsp-ui-sideline-show-flycheck t)
 
 
@@ -319,7 +331,7 @@ PWD is not in a git repo (or the git command is not found)."
 ; http://www.flycheck.org/manual/latest/index.html
 (require 'flycheck)
 
-(add-hook 'lsp-mode-hook #'global-flycheck-mode)
+;(add-hook 'lsp-mode-hook #'global-flycheck-mode)
 
 ;; disable jshint since we prefer eslint checking
 (setq-default flycheck-disabled-checkers
@@ -337,6 +349,8 @@ PWD is not in a git repo (or the git command is not found)."
     '(json-jsonlist)))
 
 
+(load-theme 'solarized-light t)
+
 
 
 
@@ -350,11 +364,11 @@ PWD is not in a git repo (or the git command is not found)."
  '(auto-save-file-name-transforms '((".*" "~/.emacs.d/autosaves/\\1" t)))
  '(css-indent-offset 2)
  '(custom-safe-themes
-   '("180adb18379d7720859b39124cb6a79b4225d28cef4bfcf4ae2702b199a274c8" "e16a771a13a202ee6e276d06098bc77f008b73bbac4d526f160faa2d76c1dd0e" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "787574e2eb71953390ed2fb65c3831849a195fd32dfdd94b8b623c04c7f753f0" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" default))
+   '("d89e15a34261019eec9072575d8a924185c27d3da64899905f8548cbd9491a36" "57a29645c35ae5ce1660d5987d3da5869b048477a7801ce7ab57bfb25ce12d3e" "833ddce3314a4e28411edf3c6efde468f6f2616fc31e17a62587d6a9255f4633" "285d1bf306091644fb49993341e0ad8bafe57130d9981b680c1dbd974475c5c7" "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773" "3e200d49451ec4b8baa068c989e7fba2a97646091fd555eca0ee5a1386d56077" "fee7287586b17efbfda432f05539b58e86e059e78006ce9237b8732fde991b4c" "4c56af497ddf0e30f65a7232a8ee21b3d62a8c332c6b268c81e9ea99b11da0d3" "180adb18379d7720859b39124cb6a79b4225d28cef4bfcf4ae2702b199a274c8" "e16a771a13a202ee6e276d06098bc77f008b73bbac4d526f160faa2d76c1dd0e" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "787574e2eb71953390ed2fb65c3831849a195fd32dfdd94b8b623c04c7f753f0" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" default))
  '(js-indent-level 2)
  '(js2-basic-offset 2)
  '(package-selected-packages
-   '(helm-ag helm-mode-manager helm-z web-mode prettier-rc prettier yasnippet projectile lsp-ui flycheck-tip company lsp-treemacs eslint-fix eslint-rc lsp-mode flycheck which-key tree-sitter-langs outline-magic tree-sitter gitconfig git-modes transpose-frame markdown-mode prettier-js fold-this git-wip-timemachine git-time-metric typescript-mode typescript python-mode magit json-mode js2-mode highlight-indentation highlight-indent-guides highlight-chars gradle-mode go-playground go-errcheck git-timemachine)))
+   '(quelpa-use-package quelpa exec-path-from-shell solarized-theme helm-ag helm-mode-manager helm-z web-mode prettier-rc prettier yasnippet projectile lsp-ui flycheck-tip company lsp-treemacs eslint-fix eslint-rc lsp-mode flycheck which-key tree-sitter-langs outline-magic tree-sitter gitconfig git-modes transpose-frame markdown-mode prettier-js fold-this git-wip-timemachine git-time-metric typescript-mode typescript python-mode magit json-mode js2-mode highlight-indentation highlight-indent-guides highlight-chars gradle-mode go-playground go-errcheck git-timemachine)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
