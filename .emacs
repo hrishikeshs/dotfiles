@@ -1,13 +1,11 @@
 ;;; Emacs config ;;;
 ;;; CODE:
 
-
 ;; Emacs gc stuff
 (setq gc-cons-threshold (* 1024 1024 1024))
 (setq jit-lock-defer-time 0.05)
 (setq read-process-output-max (* 1024 1024 10))
 (setq package-native-compile t)
-
 
 ;; Emacs package management stuff
 (require 'package)
@@ -24,7 +22,6 @@
 (add-to-list 'load-path "~/.emacs.d/add-node-modules-path")
 (add-to-list 'load-path "~/.emacs.d/highlight-indentation-mode")
 (load "~/.emacs.d/highlight-indentation-mode.el")
-
 
 ;; Emacs server start
 (server-start)
@@ -256,8 +253,6 @@ PWD is not in a git repo (or the git command is not found)."
 (put 'downcase-region 'disabled nil)
 
 
-
-
 (use-package tree-sitter
   :ensure t
   :config
@@ -292,7 +287,6 @@ PWD is not in a git repo (or the git command is not found)."
 (add-to-list 'auto-mode-alist '("\\.ts$" . jtsx-typescript-mode))
 (add-to-list 'auto-mode-alist '("\\.js$" . jtsx-typescript-mode))
 
-
 ;; use local eslint from node_modules before global
 ;; http://emacs.stackexchange.com/questions/21205/flycheck-with-file-relative-eslint-executable
 (defun my/use-eslint-from-node-modules ()
@@ -309,8 +303,6 @@ PWD is not in a git repo (or the git command is not found)."
 (add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
 ; http://www.flycheck.org/manual/latest/index.html
 (require 'flycheck)
-
-
 (require 'lsp-mode)
 
 (add-hook 'prog-mode-hook 'highlight-indentation-mode)
@@ -349,6 +341,8 @@ PWD is not in a git repo (or the git command is not found)."
 (global-set-key "\C-xh" 'flycheck-list-errors)
 (global-set-key "\C-x\C-l" 'lsp-execute-code-action)
 
+
+
 ;;;;;; End web-mode config ;;;;;
 
 (projectile-global-mode)
@@ -363,13 +357,18 @@ PWD is not in a git repo (or the git command is not found)."
 
 (helm-mode)
 
+(global-set-key "\C-xp" 'helm-do-ag)
+
 (load-theme 'solarized-light t)
 
 (custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
  '(flycheck-error ((t (:background "#ff6849" :foreground "#ffffff" :underline t :weight bold))))
  '(lsp-flycheck-error-unnecessary-face ((t (:background "#ff6849" :foreground "#ffffff" :underline t :weight bold))) t)
  '(lsp-ui-sideline-global ((t (:inherit error :underline "#cb4b16")))))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(ac-ispell treesit-ispell zenburn-theme yasnippet which-key web-mode visual-fill-column use-package typescript-mode tree-sitter-langs track-changes solarized-theme sideline-flycheck projectile prettier-rc prettier org-present magit lsp-ui jtsx jsonrpc json-mode js2-mode helm-z helm-xref helm-mode-manager helm-lsp helm-ag gitconfig git-timemachine fold-this exec-path-from-shell eslint-fix doom-themes dap-mode company auto-compile)))
