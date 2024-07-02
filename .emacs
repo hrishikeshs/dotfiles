@@ -1,55 +1,41 @@
 ;;; Emacs config ;;;
 ;;; CODE:
-
-;; Emacs gc stuff
-(setq gc-cons-threshold (* 1024 1024 1024))
-(setq jit-lock-defer-time 0.05)
-(setq read-process-output-max (* 1024 1024 10))
-(setq package-native-compile t)
-
-;; Emacs package management stuff
-(require 'package)
-(add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/")) ;; installed by default
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-(add-to-list 'package-archives '("gnu-devel" . "https://elpa.gnu.org/devel/"))
-(setq load-prefer-newer t)
-(package-initialize)
-(require 'auto-compile)
-(auto-compile-on-load-mode)
-(auto-compile-on-save-mode)
 (setq load-path (cons (expand-file-name "~/elisp") load-path))
 (add-to-list 'load-path "~/.emacs.d/add-node-modules-path")
 (add-to-list 'load-path "~/.emacs.d/highlight-indentation-mode")
 (load "~/.emacs.d/highlight-indentation-mode.el")
 
-;; Emacs server start
+
 (server-start)
 (global-unset-key "\C-o")
 (global-set-key "\C-x5" 'split-window-horizontally)
 
-;; Mail stuff
+
 (setq mail-self-blind t)
 (setq sendmail-coding-system 'iso-2022-jp)
 (setq visible-bell 1)
 (setq require-final-newline t)
 
 (global-auto-revert-mode t)
-
+(setq global-auto-revert-non-file-buffers t)
 ;; disable menu bar in buffers
 (menu-bar-mode -1)
 (setq-default indent-tabs-mode nil)
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-
 (require 'git-commit)
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("gnu-devel" . "https://elpa.gnu.org/devel/"))
+(package-initialize)
+
 
 (when (memq window-system '(mac ns x))
   (exec-path-from-shell-initialize))
 
 ; maybe-new-shell -- go to existing shell, or make new shell, based on argument
 (defun maybe-new-shell (arg)
-  "ARG Create new or jump to existing shell if the command has an argument."
+  "Create new or jump to existing shell if the command has an argument."
   (interactive "p")
 
   ; no matter what happens, we will need to go to (after creating if necessary) the first shell buffer
@@ -68,6 +54,13 @@
     )
   )
 )
+
+
+(add-hook 'eshell-mode-hook
+   (lambda ()
+     (setenv "TERM" "emacs") ; enable colors
+     ))
+
 
 (defun back()
   (interactive)
@@ -89,7 +82,7 @@
 ;; define favorite mappings
 (define-key dired-o-map "s" 'maybe-new-shell)
 
-(global-font-lock-mode t)
+;(global-font-lock-mode t)
 
 (defun enable-minor-mode (my-pair)
   "Enable minor mode if filename match the regexp.  MY-PAIR is a cons cell (regexp . minor-mode)."
@@ -252,6 +245,14 @@ PWD is not in a git repo (or the git command is not found)."
 (set-face-background 'highlight-indentation-face "lightgray")
 (put 'downcase-region 'disabled nil)
 
+; The emacs default is too low 4k considering that the some of the language server responses are in 800k - 3M range.
+(setq read-process-output-max (* 1024 1024 100)) ;; 10mb
+
+;; emacs gc default is too low
+(setq gc-cons-threshold 100000000)
+(setq company-idle-delay 0.0
+      company-minimum-prefix-length 1
+      create-lockfiles nil) ;; lock files will kill `npm start'
 
 (use-package tree-sitter
   :ensure t
@@ -266,26 +267,56 @@ PWD is not in a git repo (or the git command is not found)."
   :ensure t
   :after tree-sitter)
 
-
-(setq company-idle-delay 0.0
-      company-minimum-prefix-length 1
-      create-lockfiles nil) ;; lock files will kill `npm start'
-
 ;;;;;;; Web mode config for most of the web development ;;;;;;;
-(use-package jtsx
-  :ensure t
-  :mode (("\\.jsx?\\'" . jtsx-jsx-mode)
-         ("\\.tsx\\'" . jtsx-tsx-mode)
-         ("\\.ts\\'" . jtsx-typescript-mode))
-  :commands jtsx-install-treesit-language
-  :hook ((jtsx-jsx-mode . hs-minor-mode)
-         (jtsx-tsx-mode . hs-minor-mode)
-         (jtsx-typescript-mode . hs-minor-mode)))
 
-(add-to-list 'auto-mode-alist '("\\.tsx$" . jtsx-tsx-mode))
-(add-to-list 'auto-mode-alist '("\\.jsx$" . jtsx-jsx-mode))
-(add-to-list 'auto-mode-alist '("\\.ts$" . jtsx-typescript-mode))
-(add-to-list 'auto-mode-alist '("\\.js$" . jtsx-typescript-mode))
+(defun web-mode-init-hook ()
+  "Hooks for Web mode"
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2)
+  (setq web-mode-enable-auto-pairing t)
+  (setq web-mode-enable-auto-closing t)
+  (setq web-mode-enable-current-element-highlight t)
+  (setq web-mode-enable-current-column-highlight t))
+
+
+(which-key-mode)
+
+;;;;;; End web-mode config ;;;;;
+
+
+(add-hook 'prog-mode-hook 'highlight-indentation-mode)
+(add-hook 'typescript-mode-hook 'lsp)
+(add-hook 'typescript-mode-hook 'prettier-rc-mode)
+(add-hook 'js2-mode-hook 'prettier-rc-mode)
+(add-hook 'web-mode-hook 'prettier-rc-mode)
+(add-hook 'lsp-mode-hook 'lsp-ui-mode)
+(add-hook 'lsp-mode-hook 'company-mode)
+(add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
+
+
+(add-hook 'lsp-mode-hook (lambda()(setq lsp-clients-typescript-init-opts '(:importModuleSpecifierPreference "non-relative"))))
+(add-hook 'lsp-mode-hook (lambda()(lsp-make-interactive-code-action organize-imports-ts "source.organizeImports.ts-ls")))
+
+
+(projectile-global-mode)
+
+(add-to-list 'projectile-globally-ignored-directories "-/*/node_modules")
+(add-to-list 'projectile-globally-ignored-directories "-/*/.git/")
+
+(setq projectile-enable-caching t)
+
+(require 'helm)
+(helm-mode)
+;; customizations for finding definitions and references in JS/TS projects
+(global-set-key "\C-x\C-i" 'lsp-ui-peek-find-definitions)
+(global-set-key "\C-x\C-e" 'lsp-ui-peek-find-references)
+(global-set-key "\C-xf" 'projectile-find-file)
+(global-set-key "\C-xh" 'flycheck-list-errors)
+(global-set-key "\C-x\C-l" 'lsp-execute-code-action)
+(setq lsp-ui-sideline-show-flycheck t)
+
+
 
 ;; use local eslint from node_modules before global
 ;; http://emacs.stackexchange.com/questions/21205/flycheck-with-file-relative-eslint-executable
@@ -299,23 +330,15 @@ PWD is not in a git repo (or the git command is not found)."
                                         root))))
     (when (and eslint (file-executable-p eslint))
       (setq-local flycheck-javascript-eslint-executable eslint))))
-
 (add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
+
 ; http://www.flycheck.org/manual/latest/index.html
 (require 'flycheck)
-(require 'lsp-mode)
 
-(add-hook 'prog-mode-hook 'highlight-indentation-mode)
-(add-hook 'prog-mode-hook  #'lsp)
-(add-hook 'lsp-mode-hook 'lsp-ui-mode)
-(add-hook 'lsp-mode-hook 'company-mode)
-(add-hook 'lsp-mode-hook 'prettier-rc-mode);
-(add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
 (add-hook 'lsp-mode-hook #'global-flycheck-mode)
 
-(use-package lsp-ui :commands lsp-ui-mode)
-;; if you are helm user
-(use-package helm-lsp :commands helm-lsp-workspace-symbol)
+(setq lsp-clients-typescript-init-opts
+        '(:importModuleSpecifierPreference "non-relative"))
 
 ;; disable jshint since we prefer eslint checking
 (setq-default flycheck-disabled-checkers
@@ -332,43 +355,31 @@ PWD is not in a git repo (or the git command is not found)."
   (append flycheck-disabled-checkers
     '(json-jsonlist)))
 
-(setq lsp-ui-sideline-show-flycheck t)
-
-;; customizations for finding definitions and references in JS/TS projects
-(global-set-key "\C-x\C-i" 'lsp-ui-peek-find-definitions)
-(global-set-key "\C-x\C-e" 'lsp-ui-peek-find-references)
-(global-set-key "\C-xf" 'projectile-find-file)
-(global-set-key "\C-xh" 'flycheck-list-errors)
-(global-set-key "\C-x\C-l" 'lsp-execute-code-action)
-
-
-
-;;;;;; End web-mode config ;;;;;
-
-(projectile-global-mode)
-
-(add-to-list 'projectile-globally-ignored-directories "-/*/node_modules")
-
-(add-to-list 'projectile-globally-ignored-directories "-/*/.git/")
-
-(setq projectile-enable-caching t)
-
-(require 'helm)
-
-(helm-mode)
-
-(global-set-key "\C-xp" 'helm-do-ag)
 
 (load-theme 'solarized-light t)
 
-(custom-set-faces
- '(flycheck-error ((t (:background "#ff6849" :foreground "#ffffff" :underline t :weight bold))))
- '(lsp-flycheck-error-unnecessary-face ((t (:background "#ff6849" :foreground "#ffffff" :underline t :weight bold))) t)
- '(lsp-ui-sideline-global ((t (:inherit error :underline "#cb4b16")))))
+
+
+
+
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(auto-save-file-name-transforms '((".*" "~/.emacs.d/autosaves/\\1" t)))
+ '(css-indent-offset 2)
+ '(custom-safe-themes
+   '("524fa911b70d6b94d71585c9f0c5966fe85fb3a9ddd635362bfabd1a7981a307" "d89e15a34261019eec9072575d8a924185c27d3da64899905f8548cbd9491a36" "57a29645c35ae5ce1660d5987d3da5869b048477a7801ce7ab57bfb25ce12d3e" "833ddce3314a4e28411edf3c6efde468f6f2616fc31e17a62587d6a9255f4633" "285d1bf306091644fb49993341e0ad8bafe57130d9981b680c1dbd974475c5c7" "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773" "3e200d49451ec4b8baa068c989e7fba2a97646091fd555eca0ee5a1386d56077" "fee7287586b17efbfda432f05539b58e86e059e78006ce9237b8732fde991b4c" "4c56af497ddf0e30f65a7232a8ee21b3d62a8c332c6b268c81e9ea99b11da0d3" "180adb18379d7720859b39124cb6a79b4225d28cef4bfcf4ae2702b199a274c8" "e16a771a13a202ee6e276d06098bc77f008b73bbac4d526f160faa2d76c1dd0e" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "787574e2eb71953390ed2fb65c3831849a195fd32dfdd94b8b623c04c7f753f0" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" default))
+ '(js-indent-level 2)
+ '(js2-basic-offset 2)
+ '(lsp-typescript-preferences-import-module-specifier "non-relative")
  '(package-selected-packages
-   '(ac-ispell treesit-ispell zenburn-theme yasnippet which-key web-mode visual-fill-column use-package typescript-mode tree-sitter-langs track-changes solarized-theme sideline-flycheck projectile prettier-rc prettier org-present magit lsp-ui jtsx jsonrpc json-mode js2-mode helm-z helm-xref helm-mode-manager helm-lsp helm-ag gitconfig git-timemachine fold-this exec-path-from-shell eslint-fix doom-themes dap-mode company auto-compile)))
+   '(quelpa-use-package quelpa exec-path-from-shell solarized-theme helm-ag helm-mode-manager helm-z web-mode prettier-rc prettier yasnippet projectile lsp-ui flycheck-tip company lsp-treemacs eslint-fix eslint-rc lsp-mode flycheck which-key tree-sitter-langs outline-magic tree-sitter gitconfig git-modes transpose-frame markdown-mode prettier-js fold-this git-wip-timemachine git-time-metric typescript-mode typescript python-mode magit json-mode js2-mode highlight-indentation highlight-indent-guides highlight-chars gradle-mode go-playground go-errcheck git-timemachine)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
