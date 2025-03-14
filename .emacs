@@ -253,22 +253,10 @@ PWD is not in a git repo (or the git command is not found)."
 
 ;; emacs gc default is too low
 (setq gc-cons-threshold 100000000)
-(setq company-idle-delay 0.0
+(setq company-idle-delay 0.5
       company-minimum-prefix-length 1
       create-lockfiles nil) ;; lock files will kill `npm start'
 
-(use-package tree-sitter
-  :ensure t
-  :config
-  ;; activate tree-sitter on any buffer containing code for which it has a parser available
-  (global-tree-sitter-mode)
-  ;; you can easily see the difference tree-sitter-hl-mode makes for python, ts or tsx
-  ;; by switching on and off
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
-
-(use-package tree-sitter-langs
-  :ensure t
-  :after tree-sitter)
 
 ;;;;;;; Web mode config for most of the web development ;;;;;;;
 
@@ -286,8 +274,6 @@ PWD is not in a git repo (or the git command is not found)."
 (which-key-mode)
 
 ;;;;;; End web-mode config ;;;;;
-
-
 (add-hook 'prog-mode-hook 'highlight-indentation-mode)
 (add-hook 'typescript-mode-hook 'lsp)
 (add-hook 'typescript-mode-hook 'prettier-rc-mode)
@@ -369,6 +355,27 @@ PWD is not in a git repo (or the git command is not found)."
     (current-buffer)))
 
 
+;; LLM integration inside emacs via ollama
+
+(gptel-make-ollama "Ollama"             ;Any name of your choosing
+  :host "localhost:11434"               ;Where it's running
+  :stream t                             ;Stream responses
+  :models '(hf.co/unsloth/DeepSeek-R1-Distill-Qwen-14B-GGUF)) ;List of models
+
+;; OPTIONAL configuration
+(setq
+ gptel-model 'hf.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF:Q8_0
+ gptel-backend (gptel-make-ollama "Ollama"
+                 :host "localhost:11434"
+                 :stream t
+                 :models '(hf.co/unsloth/DeepSeek-R1-Distill-Qwen-14B-GGUF)))
+
+
+;; End LLM Integration
+
+(setq create-lockfiles nil)
+(setq warning-minimum-level :error)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -377,16 +384,39 @@ PWD is not in a git repo (or the git command is not found)."
  '(auto-save-file-name-transforms '((".*" "~/.emacs.d/autosaves/\\1" t)))
  '(css-indent-offset 2)
  '(custom-safe-themes
-   '("ffafb0e9f63935183713b204c11d22225008559fa62133a69848835f4f4a758c" "7964b513f8a2bb14803e717e0ac0123f100fb92160dcf4a467f530868ebaae3e" "5f128efd37c6a87cd4ad8e8b7f2afaba425425524a68133ac0efd87291d05874" "524fa911b70d6b94d71585c9f0c5966fe85fb3a9ddd635362bfabd1a7981a307" "d89e15a34261019eec9072575d8a924185c27d3da64899905f8548cbd9491a36" "57a29645c35ae5ce1660d5987d3da5869b048477a7801ce7ab57bfb25ce12d3e" "833ddce3314a4e28411edf3c6efde468f6f2616fc31e17a62587d6a9255f4633" "285d1bf306091644fb49993341e0ad8bafe57130d9981b680c1dbd974475c5c7" "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773" "3e200d49451ec4b8baa068c989e7fba2a97646091fd555eca0ee5a1386d56077" "fee7287586b17efbfda432f05539b58e86e059e78006ce9237b8732fde991b4c" "4c56af497ddf0e30f65a7232a8ee21b3d62a8c332c6b268c81e9ea99b11da0d3" "180adb18379d7720859b39124cb6a79b4225d28cef4bfcf4ae2702b199a274c8" "e16a771a13a202ee6e276d06098bc77f008b73bbac4d526f160faa2d76c1dd0e" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "787574e2eb71953390ed2fb65c3831849a195fd32dfdd94b8b623c04c7f753f0" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" default))
+   '("ffafb0e9f63935183713b204c11d22225008559fa62133a69848835f4f4a758c"
+     "7964b513f8a2bb14803e717e0ac0123f100fb92160dcf4a467f530868ebaae3e"
+     "5f128efd37c6a87cd4ad8e8b7f2afaba425425524a68133ac0efd87291d05874"
+     "524fa911b70d6b94d71585c9f0c5966fe85fb3a9ddd635362bfabd1a7981a307"
+     "d89e15a34261019eec9072575d8a924185c27d3da64899905f8548cbd9491a36"
+     "57a29645c35ae5ce1660d5987d3da5869b048477a7801ce7ab57bfb25ce12d3e"
+     "833ddce3314a4e28411edf3c6efde468f6f2616fc31e17a62587d6a9255f4633"
+     "285d1bf306091644fb49993341e0ad8bafe57130d9981b680c1dbd974475c5c7"
+     "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773"
+     "3e200d49451ec4b8baa068c989e7fba2a97646091fd555eca0ee5a1386d56077"
+     "fee7287586b17efbfda432f05539b58e86e059e78006ce9237b8732fde991b4c"
+     "4c56af497ddf0e30f65a7232a8ee21b3d62a8c332c6b268c81e9ea99b11da0d3"
+     "180adb18379d7720859b39124cb6a79b4225d28cef4bfcf4ae2702b199a274c8"
+     "e16a771a13a202ee6e276d06098bc77f008b73bbac4d526f160faa2d76c1dd0e"
+     "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879"
+     "787574e2eb71953390ed2fb65c3831849a195fd32dfdd94b8b623c04c7f753f0"
+     "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4"
+     default))
  '(js-indent-level 2)
  '(js2-basic-offset 2)
  '(lsp-typescript-preferences-import-module-specifier "non-relative")
  '(magit-save-repository-buffers nil)
  '(package-selected-packages
-   '(2048-game doom-themes modus-themes use-package impatient-mode yaml-mode yaml quelpa-use-package quelpa exec-path-from-shell solarized-theme helm-ag helm-mode-manager helm-z web-mode prettier-rc prettier yasnippet projectile lsp-ui flycheck-tip company lsp-treemacs eslint-fix eslint-rc lsp-mode flycheck which-key tree-sitter-langs outline-magic tree-sitter gitconfig git-modes transpose-frame markdown-mode prettier-js fold-this git-wip-timemachine git-time-metric typescript-mode typescript python-mode magit json-mode js2-mode highlight-indentation highlight-indent-guides highlight-chars gradle-mode go-playground go-errcheck git-timemachine)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+   '(2048-game company doom-themes eglot eslint-fix eslint-rc
+               exec-path-from-shell flycheck flycheck-tip fold-this
+               git-modes git-time-metric git-timemachine
+               git-wip-timemachine gitconfig go-errcheck go-playground
+               gptel gradle-mode helm-ag helm-mode-manager helm-z
+               highlight-chars highlight-indent-guides
+               highlight-indentation impatient-mode js2-mode json-mode
+               lsp-mode lsp-treemacs lsp-ui magit markdown-mode
+               modus-themes outline-magic prettier prettier-js
+               prettier-rc projectile python-mode quelpa
+               quelpa-use-package solarized-theme transient
+               transpose-frame tree-sitter typescript typescript-mode
+               use-package web-mode which-key yaml yaml-mode yasnippet)))
